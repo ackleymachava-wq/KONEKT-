@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konekt</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+/* ===== RESET ===== */
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body, html{background-color:#0a0a0a;color:#fff;}
+
+/* ===== AUTH ===== */
+.auth-container{max-width:400px;margin:80px auto;padding:20px;background:#111;border-radius:15px;box-shadow:0 5px 20px rgba(0,0,0,0.7);}
+.auth-container h1{text-align:center;color:#c084fc;margin-bottom:10px;}
+.auth-container p.subtitle{text-align:center;color:#aaa;margin-bottom:20px;}
+.auth-container .tabs{display:flex;justify-content:space-around;margin-bottom:20px;}
+.auth-container .tabs button{flex:1;padding:10px;background:#222;border:none;color:#fff;cursor:pointer;font-weight:bold;border-radius:10px;margin:0 5px;}
+.auth-container .tabs button.active{background:#7c3aed;}
+.auth-container .form{display:flex;flex-direction:column;gap:10px;}
+.auth-container .form input{padding:10px;border-radius:10px;border:1px solid #444;background:#1e1e1e;color:#fff;}
+.auth-container .form button{padding:10px;border-radius:10px;border:none;background:#7c3aed;color:#fff;font-weight:bold;cursor:pointer;box-shadow:0 4px 15px rgba(124,58,237,0.5);}
+.auth-container .form button:hover{background:#9d4edd;transform:translateY(-2px);box-shadow:0 6px 20px rgba(156,77,237,0.7);}
+.auth-container p.footer{text-align:center;margin-top:15px;color:#aaa;}
+
+/* ===== DASHBOARD ===== */
+.dashboard{max-width:480px;margin:20px auto;padding:20px;display:none;}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.profile{display:flex;align-items:center;gap:10px;}
+.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(145deg,#7c3aed,#c084fc);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;box-shadow:0 0 8px #c084fc;}
+.greeting{font-weight:500;}
+.profile-icon i{font-size:1.8rem;color:#c084fc;cursor:pointer;}
+.card{background:#111;border-radius:15px;padding:15px;margin-bottom:20px;box-shadow:0 5px 20px rgba(0,0,0,0.7);}
+.wallet-top{display:flex;justify-content:space-between;align-items:center;}
+.saldo-info span{font-size:0.9rem;color:#aaa;}
+.saldo-info h2{font-size:1.8rem;margin:5px 0;color:#c084fc;text-shadow:0 0 8px #a855f7;display:flex;align-items:center;gap:5px;}
+.wallet-actions{display:flex;gap:10px;margin-top:10px;}
+.btn{background:#7c3aed;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer;font-weight:600;box-shadow:0 4px 15px rgba(124,58,237,0.5);}
+.btn:hover{background:#9d4edd;transform:translateY(-2px);box-shadow:0 6px 20px rgba(156,77,237,0.7);}
+.new-order{display:flex;flex-direction:column;gap:10px;}
+.new-order input{padding:10px;border-radius:10px;border:1px solid #444;background-color:#1e1e1e;color:#fff;}
+.new-order input::placeholder{color:#888;}
+.new-order button{display:flex;align-items:center;gap:5px;}
+.banner p{text-align:center;font-weight:bold;color:#c084fc;}
+.orders h3{margin-bottom:10px;}
+.order-card{border:1px solid #333;padding:10px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;background:#1a1a1a;box-shadow:0 4px 15px rgba(124,58,237,0.3);}
+.order-info{display:flex;flex-direction:column;}
+.status{font-weight:bold;padding:3px 8px;border-radius:10px;color:#fff;font-size:0.8rem;}
+.status.entregue{background-color:#22c55e;}
+.status.cancelado{background-color:#ef4444;}
+.order-card button{border:1px solid #7c3aed;background:none;color:#7c3aed;padding:5px 10px;border-radius:8px;cursor:pointer;}
+.order-card button:hover{background:#7c3aed;color:#fff;box-shadow:0 0 8px #c084fc;}
+#adminPanel{display:none;margin-top:10px;}
+#adminPanel select{padding:10px;border-radius:10px;background:#1e1e1e;border:1px solid #444;color:#fff;margin-bottom:10px;}
+#logoutBtn{margin-top:10px;background:#ef4444;}
+#planCountdown{font-size:0.9rem;color:#aaa;margin-left:10px;}
+.plan-icon{font-size:1.2rem;}
+#usersList{margin-top:10px;color:#aaa;}
+</style>
+
+<!-- ===== FIREBASE ===== -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-analytics.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyBIQ_TXBFcWrnENLKZsVv-jjivFrsoaW8M",
+authDomain: "konekt-56d22.firebaseapp.com",
+projectId: "konekt-56d22",
+storageBucket: "konekt-56d22.firebasestorage.app",
+messagingSenderId: "995258729919",
+appId: "1:995258729919:web:6213ce67b6c00ce5308d0a",
+measurementId: "G-BT6Z9DLQL4"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+window.db = db;
+</script>
+
+</head>
+<body>
+<div class="auth-container">
+<h1>Konekt</h1>
+<p class="subtitle">Acesso à plataforma</p>
+<div class="tabs">
+    <button class="active" id="loginTab">Login</button>
+    <button id="signupTab">Cadastro</button>
+</div>
+
+<div class="form" id="loginForm">
+<input type="text" placeholder="Nome" id="loginName">
+<input type="password" placeholder="Senha" id="loginPassword">
+<button class="btn" id="loginBtn">Entrar</button>
+</div>
+
+<div class="form" id="signupForm" style="display:none;">
+<input type="text" placeholder="Nome" id="signupName">
+<input type="email" placeholder="Email" id="signupEmail">
+<input type="text" placeholder="Número" id="signupNumber">
+<input type="password" placeholder="Senha" id="signupPassword">
+<button class="btn" id="signupBtn">Cadastrar</button>
+</div>
+
+<p class="footer">© 2026 Konekt | Criado por Ackley Machava</p>
+</div>
+
+<div class="dashboard">
+<header class="header">
+<div class="profile">
+    <div class="avatar" id="userAvatar">U</div>
+    <div class="greeting"></div>
+</div>
+<div class="profile-icon">
+    <i class="fas fa-user-circle"></i>
+</div>
+</header>
+
+<section class="wallet card">
+<div class="wallet-top">
+    <div class="saldo-info">
+        <span>Plano Atual</span>
+        <h2 id="planDisplay"><i class="plan-icon fas fa-crown"></i> <span id="planName"></span> <span id="planCountdown"></span></h2>
+    </div>
+</div>
+<button class="btn" id="logoutBtn">Sair</button>
+</section>
+
+<section class="new-order card">
+<input type="text" placeholder="Produto" id="productInput">
+<input type="text" placeholder="Seu número" id="userNumberInput">
+<input type="text" placeholder="Número do cliente" id="clientNumberInput">
+<input type="text" placeholder="Província" id="provinceInput">
+<input type="date" placeholder="Data de entrega" id="deliveryDateInput">
+<button class="btn" id="sendOrderBtn"><i class="fas fa-paper-plane"></i> Enviar</button>
+</section>
+
+<section class="banner card">
+<p>BEM VINDO(A) KONEKT 💠✌🏽</p>
+</section>
+
+<section class="orders card">
+<h3>Encomendas Recentes</h3>
+<div id="ordersList"></div>
+</section>
+
+<section class="card" id="adminPanel">
+<h3>Admin: Dar/Tirar Plano Pro</h3>
+<select id="userSelect"></select>
+<button class="btn" id="giveProBtn">Dar 1 mês Pro</button>
+<button class="btn" id="removeProBtn">Tirar Pro</button>
+<h3>Usuários Registrados (senhas)</h3>
+<ul id="usersList"></ul>
+</section>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
